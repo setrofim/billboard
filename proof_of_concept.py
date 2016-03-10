@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import tempfile
+import logging
 
 import praw
 import requests
@@ -20,16 +21,20 @@ class ImageGetter():
         self._seen = set()
 
     def get_image(self, path):
-        subs = self.reddit.get_subreddit(self.subreddit).get_new(limit=50)
-        url = self._get_image_url(subs)
-        while url is None or url in self._seen:
+        try:
+            subs = self.reddit.get_subreddit(self.subreddit).get_new(limit=50)
             url = self._get_image_url(subs)
-        self._seen.add(url)
+            while url is None or url in self._seen:
+                url = self._get_image_url(subs)
+            self._seen.add(url)
+        except StopIteration:
+            return None
         response = requests.get(url, stream=True)
         if response.status_code == 200:
             response.raw.decode_content = True
             with open(path, 'wb') as wfh:
                 shutil.copyfileobj(response.raw, wfh)
+        return path
 
     def _get_image_url(self, subs):
         next_sub = next(subs)
@@ -37,7 +42,7 @@ class ImageGetter():
         for image in images:
             source = image['source']
             image_aspect_ratio = source['width'] / source['height']
-            if abs(self.aspect_ratio - image_aspect_ratio) < 0.00001:
+            if abs(self.aspect_ratio - image_aspect_ratio) < 0.2:
                 return source['url']
 
 
@@ -54,17 +59,20 @@ class TextGetter():
         self._seen = set()
 
     def get_text(self):
-        subs = self.reddit.get_subreddit(self.subreddit).get_new()
-        text = None
-        while text is None or text in self._seen or 'r/showerthoughts' in text.lower():
-            text = next(subs).title
-            lower_text = text.lower()
-            for bad in self.bad_words:
-                if bad in lower_text:
-                    text = None
-                    break
-        self._seen.add(text)
-        return text
+        try:
+            subs = self.reddit.get_subreddit(self.subreddit).get_new()
+            text = None
+            while text is None or text in self._seen or 'r/showerthoughts' in text.lower():
+                text = next(subs).title
+                lower_text = text.lower()
+                for bad in self.bad_words:
+                    if bad in lower_text:
+                        text = None
+                        break
+            self._seen.add(text)
+            return text
+        except StopIteration:
+            return None
 
 
 def show_billboard(imagepath, text, fontsize=42):
@@ -77,7 +85,7 @@ def show_billboard(imagepath, text, fontsize=42):
 
     image_label = QLabel(w)
     image_label.resize(1600, 1000)
-    image_label.setPixmap(pix.scaled(w.size(), Qt.KeepAspectRatio))
+    image_label.setPixmap(pix.scaled(w.size(), Qt.KeepAspectRatioByExpanding))
 
     text_label = QLabel(w)
     text_label.resize(1600, 1000)
@@ -110,8 +118,13 @@ def main():
     textgetter = TextGetter(reddit)
 
     image_path = tempfile.mktemp()
-    imagegetter.get_image(image_path)
+    if not imagegetter.get_image(image_path):
+        logging.error("Did not find a suitable image.")
+        sys.exit(1)
     text = textgetter.get_text()
+    if not text:
+        logging.error("Did not find a suitable text.")
+        sys.exit(1)
 
     show_billboard(image_path, text)
     os.unlink(image_path)
