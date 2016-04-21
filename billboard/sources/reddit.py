@@ -10,6 +10,9 @@ import requests
 from billboard.utils import DroppingSet
 
 
+IMG_MAX_SIZE = 2000
+
+
 class ImageGetter:
 
     def __init__(self, reddit, subreddit='earthporn', aspect_ratio=1.6):
@@ -40,6 +43,8 @@ class ImageGetter:
         for image in images:
             source = image['source']
             image_aspect_ratio = source['width'] / source['height']
+            if int(source['width']) > IMG_MAX_SIZE or int(source['height']) > IMG_MAX_SIZE:
+                continue
             if abs(self.aspect_ratio - image_aspect_ratio) < 0.2:
                 return source['url']
 
