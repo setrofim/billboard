@@ -25,6 +25,7 @@ class BillboardDisplay(QMainWindow):
         self.text_label.setStyleSheet('''
             QLabel {{
                         font-size: {}pt;
+                        font-weight: bold;
                         color: #eeeeee;
                         text-align: center;
                     }}
@@ -33,9 +34,9 @@ class BillboardDisplay(QMainWindow):
         self.text_label.setAlignment(Qt.AlignCenter)
 
         dse = QGraphicsDropShadowEffect()
-        dse.setBlurRadius(10)
-        dse.setXOffset(0)
-        dse.setYOffset(0)
+        dse.setBlurRadius(0)
+        dse.setXOffset(5)
+        dse.setYOffset(5)
         dse.setColor(QColor(0, 0, 0, 255))
         self.text_label.setGraphicsEffect(dse)
         QObject.connect(self, SIGNAL("updateimage"),
