@@ -1,5 +1,7 @@
 import sys
 import argparse
+import signal
+
 
 from PyQt4.QtGui import QApplication
 
@@ -19,6 +21,7 @@ def parse_args():
 
 
 def main():
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     args = parse_args()
     app = QApplication(sys.argv)
 
