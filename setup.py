@@ -49,6 +49,7 @@ params = dict(
     install_requires=[
         #'PyQt4',
         'requests',
+        'flask',
         'praw',
     ],
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers

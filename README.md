@@ -18,7 +18,7 @@ be deployed with pip, so it's not mentioned in the dependencies.
   subreddits to pull images/text from)
 - Add more sources (currently, only Reddit)
 - An ability to remotely send images/text to the billboard for immediate display
-- Take screenshot of the current display and serve it over HTTP
+- ~~Take screenshot of the current display and serve it over HTTP~~
 - Support Python 2
 - Switch to PyQt5
 - ...

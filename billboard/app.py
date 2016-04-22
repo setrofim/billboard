@@ -1,12 +1,16 @@
+import os
 import sys
 import argparse
 import signal
+import tempfile
+import logging
 
 
 from PyQt4.QtGui import QApplication
 
 from billboard.billboard import Billboard
 from billboard.display import BillboardDisplay
+from billboard.server import Server
 from billboard.sources.reddit import RedditSource
 
 
@@ -17,21 +21,41 @@ def parse_args():
                         Period for switching billboard display in seconds.
                         Defaults to 15 minutes.
                         ''')
+    parser.add_argument('-d', '--working-directory',
+                        help='''
+                        Working directory used by billboard. If not specified,
+                        a temporary directory will be created.
+                        ''')
+    parser.add_argument('-P', '--port', type=int, default=5555,
+                        help='''
+                        Port to be used by the server.
+                        ''')
+    parser.add_argument('--debug', action='store_true')
     return parser.parse_args(sys.argv[1:])
 
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     args = parse_args()
+
+    level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(level=level)
     app = QApplication(sys.argv)
 
-    display = BillboardDisplay()
+    workdir = os.path.abspath(args.working_directory or tempfile.mktemp())
+    if not os.path.isdir(workdir):
+        logging.debug('Creating {}'.format(workdir))
+        os.makedirs(workdir)
+
+    server = Server(workdir, args.port)
+    display = BillboardDisplay(workdir=workdir)
     sources = [RedditSource()]
 
     billboard = Billboard(display, sources, args.period)
 
     billboard.start()
     display.showFullScreen()
+    server.start()
     app.exec_()
 
 

@@ -1,4 +1,5 @@
 import os
+import logging
 
 from PyQt4.QtCore import Qt, QObject, SIGNAL
 from PyQt4.QtGui import (QMainWindow, QWidget, QPixmap, QLabel,
@@ -8,8 +9,12 @@ from PyQt4.QtGui import (QMainWindow, QWidget, QPixmap, QLabel,
 
 class BillboardDisplay(QMainWindow):
 
-    def __init__(self, parent=None, fontsize=42):
+    def __init__(self, parent=None, workdir=None, fontsize=42):
         super(BillboardDisplay, self).__init__(parent)
+        self.workdir = workdir
+        self.logger = logging.getLogger('display')
+        self.logger.info('Working directory: {}'.format(self.workdir))
+        self.current_display = os.path.join(self.workdir, 'current.jpg')
         desktop = QDesktopWidget()
         self.display = QWidget(self)
         size  = desktop.availableGeometry(desktop.primaryScreen());
@@ -41,9 +46,14 @@ class BillboardDisplay(QMainWindow):
         self.text_label.setGraphicsEffect(dse)
         QObject.connect(self, SIGNAL("updateimage"),
                         self.display_image)
+        QObject.connect(self, SIGNAL("updatecurrent"),
+                        self.take_screenshot)
 
     def update_image(self, imagepath):
         self.emit(SIGNAL("updateimage"), imagepath)
+
+    def update_current(self):
+        self.emit(SIGNAL("updatecurrent"), self.current_display)
 
     def display(self, imagepath, text):
         self.display_text(text)
@@ -57,4 +67,9 @@ class BillboardDisplay(QMainWindow):
 
     def display_text(self, text):
         self.text_label.setText('"{}"'.format(text))
+
+    def take_screenshot(self, path):
+        pixmap = QPixmap(QPixmap.grabWidget(self.display))
+        pixmap.save(path)
+        self.logger.debug('Saving {}'.format(path))
 

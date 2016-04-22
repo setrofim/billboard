@@ -21,4 +21,5 @@ class Billboard(Thread):
                 self.display.update_image(image)
             if text is not None:
                 self.display.display_text(text)
+            self.display.update_current()
             time.sleep(self.period)
