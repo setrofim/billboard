@@ -31,7 +31,7 @@ def main():
     billboard = Billboard(display, sources, args.period)
 
     billboard.start()
-    display.show()
+    display.showFullScreen()
     app.exec_()
 
 
