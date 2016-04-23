@@ -39,7 +39,10 @@ class ImageGetter:
 
     def _get_image_url(self, subs):
         next_sub = next(subs)
-        images = next_sub.preview.get('images', {})
+        preview = getattr(next_sub, 'preview', None)
+        if not preview:
+            return None
+        images = preview.get('images', {})
         for image in images:
             source = image['source']
             image_aspect_ratio = source['width'] / source['height']
