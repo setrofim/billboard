@@ -13,7 +13,7 @@ class Server(threading.Thread):
         self.port = port
 
     def run(self):
-        app = Flask('billboard', static_url_path=self.workdir)
+        app = Flask('billboard')
 
         @app.route('/')
         def root():
