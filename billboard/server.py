@@ -1,7 +1,7 @@
 import os
 import threading
 
-from flask import Flask, request, send_from_directory
+from flask import Flask,request, send_from_directory
 
 
 class Server(threading.Thread):
@@ -21,7 +21,10 @@ class Server(threading.Thread):
 
         @app.route('/current')
         def current():
-            return send_from_directory(self.workdir, 'current.jpg')
+            response = send_from_directory(self.workdir, 'current.jpg')
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            return  response
 
         app.run(host='0.0.0.0', port=self.port)
 
