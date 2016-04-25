@@ -3,8 +3,12 @@ import sys
 import shutil
 import tempfile
 import logging
+import warnings
 
-import praw
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    import praw
+
 import requests
 
 from billboard.utils import DroppingSet
