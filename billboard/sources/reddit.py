@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import logging
 import warnings
+import random
 
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
@@ -23,6 +24,7 @@ class ImageGetter:
         self.reddit = reddit
         self.subreddit = subreddit
         self.aspect_ratio = aspect_ratio
+        self.logger = logging.getLogger('reddit')
         self._seen = DroppingSet(50)
 
     def get_image(self, path):
@@ -30,10 +32,17 @@ class ImageGetter:
             subs = self.reddit.get_subreddit(self.subreddit).get_new(limit=50)
             url = self._get_image_url(subs)
             while url is None or url in self._seen:
+                if url is not None:
+                    self.logger.debug('Already seen!')
                 url = self._get_image_url(subs)
             self._seen.add(url)
         except StopIteration:
-            return None
+            if self._seen:
+                self.logger.debug('Did not find a suitable image; re-using one seen before.')
+                return random.choice(self._seen)
+            else:
+                self.logger.debug('Could not find any suitable images :(')
+                return None
         response = requests.get(url, stream=True)
         if response.status_code == 200:
             response.raw.decode_content = True
@@ -49,11 +58,16 @@ class ImageGetter:
         images = preview.get('images', {})
         for image in images:
             source = image['source']
+            self.logger.debug('found "{}" {}x{}'.format(source['url'],
+                                                        source['width'], source['height']))
             image_aspect_ratio = source['width'] / source['height']
             if int(source['width']) > IMG_MAX_SIZE or int(source['height']) > IMG_MAX_SIZE:
+                self.logger.debug('too large!')
                 continue
-            if abs(self.aspect_ratio - image_aspect_ratio) < 0.2:
+            if abs(self.aspect_ratio - image_aspect_ratio) < 1.0:
                 return source['url']
+            else:
+                self.logger.debug('Wrong aspect ratio! {:.02}'.format(image_aspect_ratio))
 
 
 class TextGetter:

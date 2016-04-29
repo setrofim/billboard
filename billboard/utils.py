@@ -79,3 +79,9 @@ class DroppingSet(MutableSet):
             return len(self) == len(other) and list(self) == list(other)
         return set(self) == set(other)
 
+    def __hash__(self):
+        return sum(map(hash,iter(self)))
+
+    def __getitem__(self, i):
+        return list(self)[i]
+
