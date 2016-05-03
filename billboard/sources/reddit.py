@@ -38,8 +38,10 @@ class ImageGetter:
             self._seen.add(url)
         except StopIteration:
             if self._seen:
-                self.logger.debug('Did not find a suitable image; re-using one seen before.')
-                return random.choice(self._seen)
+                num_seen = len(self._seen)
+                msg = 'Did not find a suitable image; reusing one of {} seen before.'
+                self.logger.debug(msg.format(num_seen))
+                url = random.choice(self._seen)
             else:
                 self.logger.debug('Could not find any suitable images :(')
                 return None
@@ -110,9 +112,16 @@ class RedditSource:
         self.logger = logging.getLogger('reddit')
 
     def next(self):
-        if not self.imagegetter.get_image(self.image_path):
-            self.logger.error("Did not find a suitable image.")
-        text = self.textgetter.get_text()
-        if not text:
-            self.logger.error("Did not find a suitable text.")
+        try:
+            if not self.imagegetter.get_image(self.image_path):
+                self.logger.error("Did not find a suitable image.")
+        except Exception as e:
+            self.logger.error(e)
+        try:
+            text = self.textgetter.get_text()
+            if not text:
+                self.logger.error("Did not find a suitable text.")
+        except Exception as e:
+            text = None
+            self.logger.error(e)
         return self.image_path, text
