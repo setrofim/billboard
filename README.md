@@ -19,6 +19,7 @@ be deployed with pip, so it's not mentioned in the dependencies.
 - Add more sources (currently, only Reddit)
 - An ability to remotely send images/text to the billboard for immediate display
 - ~~Take screenshot of the current display and serve it over HTTP~~
+- regex-based bad words filtering
 - Support Python 2
 - Switch to PyQt5
 - ...
