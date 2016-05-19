@@ -77,21 +77,18 @@ class TextGetter:
     def __init__(self, reddit, subreddit='showerthoughts', badlist='bad-words.txt'):
         self.reddit = reddit
         self.subreddit = subreddit
-        if badlist:
-            with open(badlist) as fh:
-                self.bad_words = fh.read().splitlines()
-        else:
-            self.bad_words = []
+        self.badlist = badlist
         self._seen = DroppingSet(50)
 
     def get_text(self):
+        bad_words = self.get_bad_words()
         try:
             subs = self.reddit.get_subreddit(self.subreddit).get_new()
             text = None
             while text is None or text in self._seen or 'r/showerthoughts' in text.lower():
                 text = next(subs).title
                 lower_text = text.lower()
-                for bad in self.bad_words:
+                for bad in bad_words:
                     if bad in lower_text:
                         text = None
                         break
@@ -99,6 +96,13 @@ class TextGetter:
             return text
         except StopIteration:
             return None
+
+    def get_bad_words(self):
+        if self.badlist and os.path.isfile(self.badlist):
+            with open(self.badlist) as fh:
+                return fh.read().splitlines()
+        else:
+            return []
 
 
 class RedditSource:
