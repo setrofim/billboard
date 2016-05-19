@@ -15,6 +15,8 @@ import requests
 from billboard.utils import DroppingSet
 
 
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
 IMG_MAX_SIZE = 2000
 
 
