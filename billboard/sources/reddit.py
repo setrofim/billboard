@@ -80,6 +80,7 @@ class TextGetter:
         self.reddit = reddit
         self.subreddit = subreddit
         self.badlist = badlist
+        self.logger = logging.getLogger('reddit')
         self._seen = DroppingSet(50)
 
     def get_text(self):
@@ -92,6 +93,7 @@ class TextGetter:
                 lower_text = text.lower()
                 for bad in bad_words:
                     if bad in lower_text:
+                        self.logger.debug('Rejecting text because matched "{}" in "{}"'.format(bad, text))
                         text = None
                         break
             self._seen.add(text)
