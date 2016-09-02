@@ -39,7 +39,7 @@ def main():
     args = parse_args()
 
     level = logging.DEBUG if args.debug else logging.INFO
-    logging.basicConfig(level=level)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(name)s: %(message)s', level=level)
     app = QApplication(sys.argv)
 
     workdir = os.path.abspath(args.working_directory or tempfile.mktemp())
