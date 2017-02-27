@@ -50,7 +50,7 @@ params = dict(
         #'PyQt4',
         'requests',
         'flask',
-        'praw',
+        'praw==3.4.0',
     ],
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
