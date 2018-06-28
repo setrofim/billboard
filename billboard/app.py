@@ -4,7 +4,7 @@ import argparse
 import signal
 import tempfile
 import logging
-
+import queue
 
 from PyQt4.QtGui import QApplication
 
@@ -47,11 +47,14 @@ def main():
         logging.debug('Creating {}'.format(workdir))
         os.makedirs(workdir)
 
-    server = Server(workdir, args.port)
+    # We use a queue to communicate between threads
+    q = queue.Queue()
+
+    server = Server(workdir, args.port, q)
     display = BillboardDisplay(workdir=workdir)
     sources = [RedditSource()]
 
-    billboard = Billboard(display, sources, args.period)
+    billboard = Billboard(display, sources, args.period, q)
 
     billboard.start()
     display.showFullScreen()

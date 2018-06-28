@@ -1,15 +1,17 @@
 import time
 from threading import Thread
 from itertools import cycle
+from queue import Empty
 
 
 class Billboard(Thread):
 
-    def __init__(self, display, sources, period):
+    def __init__(self, display, sources, period, q):
         super(Billboard, self).__init__()
         self.display = display
         self.sources = sources
         self.period = period
+        self.q = q
         self.daemon = True
 
     def run(self):
@@ -27,4 +29,7 @@ class Billboard(Thread):
             # faster machines.
             time.sleep(1)
             self.display.update_current()
-            time.sleep(self.period)
+            try:
+                self.q.get(timeout=self.period)
+            except Empty:
+                pass
